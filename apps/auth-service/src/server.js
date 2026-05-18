@@ -4,6 +4,8 @@ const express = require('express');
 
 const pool = require('./config/db');
 
+const redisClient = require('./config/redis');
+
 const userRoutes = require('../routes/userRoutes');
 
 const app = express();
@@ -12,33 +14,11 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-app.use('/api', userRoutes);
-
-app.get('/health', async (req, res) => {
-
-  try {
-
-    await pool.query('SELECT 1');
-
-    res.status(200).json({
-      service: process.env.SERVICE_NAME,
-      status: 'healthy',
-      database: 'connected',
-      timestamp: new Date().toISOString()
-    });
-
-  } catch (error) {
-
-    res.status(500).json({
-      service: process.env.SERVICE_NAME,
-      status: 'unhealthy',
-      database: 'disconnected',
-      error: error.message
-    });
-
-  }
-
-});
+/*
+  IMPORTANT:
+  ALL routes mounted under /api
+*/
+app.use('/', userRoutes);
 
 app.get('/', (req, res) => {
 
@@ -48,9 +28,30 @@ app.get('/', (req, res) => {
 
 });
 
-app.listen(PORT, async () => {
+app.get('/health', async (req, res) => {
 
-  console.log(`${process.env.SERVICE_NAME} running on port ${PORT}`);
+  try {
+
+    await pool.query('SELECT 1');
+
+    await redisClient.ping();
+
+    res.status(200).json({
+      service: process.env.SERVICE_NAME,
+      status: 'healthy'
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      error: error.message
+    });
+
+  }
+
+});
+
+const startServer = async () => {
 
   try {
 
@@ -58,10 +59,24 @@ app.listen(PORT, async () => {
 
     console.log('Database connection successful');
 
+    await redisClient.connect();
+
+    console.log('Redis connection successful');
+
+    app.listen(PORT, () => {
+
+      console.log(`${process.env.SERVICE_NAME} running on port ${PORT}`);
+
+    });
+
   } catch (error) {
 
-    console.error('Database connection failed:', error.message);
+    console.error(error.message);
+
+    process.exit(1);
 
   }
 
-});
+};
+
+startServer();

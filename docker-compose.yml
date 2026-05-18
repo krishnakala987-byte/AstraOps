@@ -1,5 +1,18 @@
 services:
 
+  api-gateway:
+    build:
+      context: ./apps/api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      SERVICE_NAME: api-gateway
+      AUTH_SERVICE_URL: http://auth-service:3000
+    depends_on:
+      - auth-service
+
   auth-service:
     build:
       context: ./apps/auth-service
@@ -14,6 +27,8 @@ services:
       DB_USER: admin
       DB_PASSWORD: admin123
       DB_NAME: astra_platform
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     depends_on:
       - postgres
       - redis
