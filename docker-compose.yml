@@ -9,6 +9,11 @@ services:
     environment:
       PORT: 3000
       SERVICE_NAME: auth-service
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: admin
+      DB_PASSWORD: admin123
+      DB_NAME: astra_platform
     depends_on:
       - postgres
       - redis
@@ -24,6 +29,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init:/docker-entrypoint-initdb.d
 
   redis:
     image: redis:7
