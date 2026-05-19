@@ -1,56 +1,25 @@
-require('dotenv').config();
-
-const express = require('express');
-
-const { createProxyMiddleware } = require('http-proxy-middleware');
+const express = require("express");
+const { createProxyMiddleware } = require("http-proxy-middleware");
 
 const app = express();
 
-const PORT = process.env.PORT || 8080;
-
-app.use(express.json());
-
-app.get('/', (req, res) => {
-
-  res.json({
-    message: 'API Gateway Running'
-  });
-
-});
-
-app.get('/health', (req, res) => {
-
-  res.json({
-    service: process.env.SERVICE_NAME,
-    status: 'healthy'
-  });
-
-});
-
-/*
-  FINAL PROXY
-*/
-
 app.use(
-  '/api/auth',
+  "/api/auth",
   createProxyMiddleware({
-    target: process.env.AUTH_SERVICE_URL,
+    target: "http://auth-service:3000",
     changeOrigin: true,
-
-    /*
-      DO NOT rewrite path anymore
-    */
-
     pathRewrite: {
-      '^/api/auth': ''
+      "^/api/auth": "",
     },
-
-    logLevel: 'debug'
   })
 );
 
+app.get("/", (req, res) => {
+  res.send("api-gateway running");
+});
+
+const PORT = 8080;
+
 app.listen(PORT, () => {
-
-  console.log(`${process.env.SERVICE_NAME} running on port ${PORT}`);
-
+  console.log(`api-gateway running on port ${PORT}`);
 });

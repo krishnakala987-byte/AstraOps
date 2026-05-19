@@ -22,13 +22,16 @@ services:
     environment:
       PORT: 3000
       SERVICE_NAME: auth-service
-      DB_HOST: postgres
+
+      DB_HOST: postgres-db
       DB_PORT: 5432
       DB_USER: admin
       DB_PASSWORD: admin123
       DB_NAME: astra_platform
-      REDIS_HOST: redis
+
+      REDIS_HOST: redis-cache
       REDIS_PORT: 6379
+
     depends_on:
       - postgres
       - redis

@@ -1,18 +1,50 @@
-const express = require('express');
+const express = require("express");
 
 const router = express.Router();
 
 const {
   createUser,
-  getUser
-} = require('../controllers/userController');
+  loginUser,
+} = require("../controllers/userController");
 
-/*
-  FINAL ROUTES
-*/
+const authMiddleware = require("../middleware/authMiddleware");
 
-router.post('/users', createUser);
+const roleMiddleware = require("../middleware/roleMiddleware");
 
-router.get('/users/:id', getUser);
+// Health/Test route
+router.get("/", (req, res) => {
+  res.send("user routes working");
+});
+
+// Register user
+router.post("/users", createUser);
+
+// Login user
+router.post("/login", loginUser);
+
+// Protected profile route
+router.get(
+  "/profile",
+  authMiddleware,
+  (req, res) => {
+    res.json({
+      message: "Protected route accessed",
+      user: req.user,
+    });
+  }
+);
+
+// Admin-only route
+router.get(
+  "/admin",
+  authMiddleware,
+  roleMiddleware("admin"),
+  (req, res) => {
+    res.json({
+      message: "Welcome Admin",
+      user: req.user,
+    });
+  }
+);
 
 module.exports = router;
