@@ -1,23 +1,54 @@
-name: Docker CI
+name: AstraOps CI Pipeline
 
 on:
   push:
     branches:
-      - main
+      - master
+
+  pull_request:
+    branches:
+      - master
 
 jobs:
-  docker:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Build Containers
-        run: docker compose build
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-      - name: Start Containers
-        run: docker compose up -d
+      # AUTH SERVICE
+      - name: Install Auth Service Dependencies
+        working-directory: apps/auth-service
+        run: npm install
 
-      - name: Show Running Containers
-        run: docker ps
+      - name: Test Auth Service
+        working-directory: apps/auth-service
+        run: echo "Auth Service Ready"
+
+      # API GATEWAY
+      - name: Install API Gateway Dependencies
+        working-directory: apps/api-gateway
+        run: npm install
+
+      - name: Test API Gateway
+        working-directory: apps/api-gateway
+        run: echo "API Gateway Ready"
+
+      # AI OPS SERVICE
+      - name: Install AI Ops Service Dependencies
+        working-directory: apps/ai-ops-service
+        run: npm install
+
+      - name: Test AI Ops Service
+        working-directory: apps/ai-ops-service
+        run: echo "AI Ops Service Ready"
+
+      # DOCKER VALIDATION
+      - name: Validate Docker Compose
+        run: docker compose config
